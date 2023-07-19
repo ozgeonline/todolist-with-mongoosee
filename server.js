@@ -4,20 +4,34 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const _ = require("lodash");
+require('dotenv').config();
+
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 
-//*database schema
-main().catch(err => console.log(err));
-async function main() {
-    await mongoose.connect('mongodb+srv://ozgeonline:o6kIuhzRA7S8hjPm@cluster0.ggoykbs.mongodb.net/todolistDB'); //Sunucuyla bağlantı kurup fruitsDB adında veritabanı arayacak.
-   console.log("connected to the server");
- };
+mongoose.set('strictQuery',false)
+const connectDB = async () => {
+  try {
+    const conn = await mongoose.connect(process.env.MONGO_URI);
+    console.log(`MongoDB Connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.log(error);
+    process.exit(1);
+  }
+}
 
+// main().catch(err => console.log(err));
+// async function main() {
+//     await mongoose.connect('mongodb+srv://ozgeonline:o6kIuhzRA7S8hjPm@cluster0.ggoykbs.mongodb.net/todolistDB'); //Sunucuyla bağlantı kurup fruitsDB adında veritabanı arayacak.
+//    console.log("connected to the server");
+//  };
+
+//*database schema
 const itemsSchema = {
   name: String
 };
@@ -148,6 +162,12 @@ app.get("/favicon.ico", function (req, res) {
   res.redirect("/");
 });
 
-app.listen(3000, function() {
-  console.log("Server started on port 3000");
-});
+// app.listen(3000, function() {
+//   console.log("Server started on port 3000");
+// });
+
+connectDB().then(()=>{
+  app.listen(PORT, ()=> {
+    console.log(`Listening on port ${PORT}`);
+  })
+})
